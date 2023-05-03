@@ -9,7 +9,7 @@
 #' @name OralOpioids
   NULL
 
-## Version 1.0.1
+## Version 1.1.0
 
 #'Obtain the latest Opioid data from Health Canada
 #'
@@ -438,26 +438,22 @@ load_HealthCanada_Opioid_Table <- function(filelocation = "", no_download = FALS
       Opioids_2$Form_1 <- ifelse (((grepl("TABLET", Opioids_2$Form))|(grepl("CAPSULE", Opioids_2$Form))), "CAPTAB", Opioids_2$Form)
       Opioids_2$Form_1 <- ifelse ((grepl("SYRUP|TINCTURE|ELIXIR|DROPS|SOLUTION|LIQUID|SUSPENSION",Opioids_2$Form)),"LIQUID", Opioids_2$Form_1)
 
-      files <- lapply(list.files(system.file('extdata', package = 'OralOpioids'), full.names = TRUE), utils::read.csv)
-
-      Big_1 <- as.data.frame(files)
+      Big_1 <- as.data.frame(utils::read.csv(paste0(system.file('extdata', package = 'OralOpioids'),"/old_data.csv")))
 
       Big_1 <- Big_1[,c(2,8)]
 
       Big_1 <- unique (Big_1)
 
 
-
       Big_1 <- Big_1%>%
-        dplyr::arrange(Big_1$DIN)%>%
+        dplyr::arrange(Big_1$DIN,desc(Big_1$MED_per_dispensing_unit))%>%
         dplyr::group_by(Big_1$DIN)%>%
         dplyr::mutate(ranks=order(.data$DIN))
 
       Big_1 <- Big_1[,-3]
 
 
-      Big_2 <- reshape2::dcast (Big_1,DIN~ ranks, value.var= "MED_per_dispensing_unit")
-
+      Big_2 <- reshape2::dcast (Big_1,DIN~ ranks, value.var= "MED_per_dispensing_unit",margins="DIN",fun.aggregate = toString)
 
       Big_2$MED_per_dispensing_unit <- ifelse (Big_2$`1`=="Couldn't be calculated","Couldn't be calculated",Big_2$`1`)
 
@@ -520,19 +516,22 @@ load_HealthCanada_Opioid_Table <- function(filelocation = "", no_download = FALS
       Incomplete3$MED_per_dispensing_unit <- ifelse ((Incomplete3$Route %in% c("BUCCAL","SUBLINGUAL") & Incomplete3$Opioid_1=="FENTANYL"),
                                                      ((Incomplete3$Opioid_2*0.13)/Incomplete3$Base1),Incomplete3$MED_per_dispensing_unit)
 
+      Incomplete3$MED_per_dispensing_unit <- ifelse ((Incomplete3$Route=="TRANSDERMAL" & Incomplete3$Opioid_1=="FENTANYL"),
+                                                     ((Incomplete3$Opioid_2*2.4)/Incomplete3$Base1),Incomplete3$MED_per_dispensing_unit)
+
 
 
       Incomplete3$MED_per_dispensing_unit <- ifelse ((Incomplete3$Route== "ORAL" & Incomplete3$Opioid_1=="CODEINE"),
                                                      ((Incomplete3$Opioid_2*0.15)/Incomplete3$Base1),Incomplete3$MED_per_dispensing_unit)
 
       Incomplete3$MED_per_dispensing_unit <- ifelse ((Incomplete3$Route== "ORAL" & Incomplete3$Opioid_1=="HYDROCODONE"),
-                                                     ((Incomplete3$Opioid_2*1.5)/Incomplete3$Base1),Incomplete3$MED_per_dispensing_unit)
+                                                     ((Incomplete3$Opioid_2*1)/Incomplete3$Base1),Incomplete3$MED_per_dispensing_unit)
 
       Incomplete3$MED_per_dispensing_unit <- ifelse ((Incomplete3$Route== "ORAL" & Incomplete3$Opioid_1=="OXYCODONE"),
                                                      ((Incomplete3$Opioid_2*1.5)/Incomplete3$Base1),Incomplete3$MED_per_dispensing_unit)
 
       Incomplete3$MED_per_dispensing_unit <- ifelse ((Incomplete3$Route== "ORAL" & Incomplete3$Opioid_1=="HYDROMORPHONE"),
-                                                     ((Incomplete3$Opioid_2*5)/Incomplete3$Base1),Incomplete3$MED_per_dispensing_unit)
+                                                     ((Incomplete3$Opioid_2*4)/Incomplete3$Base1),Incomplete3$MED_per_dispensing_unit)
 
       Incomplete3$MED_per_dispensing_unit <- ifelse ((Incomplete3$Route== "RECTAL" & Incomplete3$Opioid_1=="MORPHINE"),
                                                      ((Incomplete3$Opioid_2*3)/Incomplete3$Base1),Incomplete3$MED_per_dispensing_unit)
@@ -542,6 +541,13 @@ load_HealthCanada_Opioid_Table <- function(filelocation = "", no_download = FALS
 
       Incomplete3$MED_per_dispensing_unit <- ifelse ((Incomplete3$Route== "ORAL" & Incomplete3$Opioid_1=="OXYMORPHONE"),
                                                      ((Incomplete3$Opioid_2*3)/Incomplete3$Base1),Incomplete3$MED_per_dispensing_unit)
+
+
+      Incomplete3$MED_per_dispensing_unit <- ifelse ((Incomplete3$Route== "ORAL" & Incomplete3$Opioid_1=="TAPENTADOL"),
+                                                     ((Incomplete3$Opioid_2*0.4)/Incomplete3$Base1),Incomplete3$MED_per_dispensing_unit)
+
+
+
       #str(Incomplete3)
 
       Incomplete3$MED_per_dispensing_unit <- suppressWarnings(as.numeric(Incomplete3$MED_per_dispensing_unit))
@@ -654,6 +660,10 @@ load_HealthCanada_Opioid_Table <- function(filelocation = "", no_download = FALS
 
       Big_Data <- unique(Big_Data)
 
+
+      Big_Data$DIN <- as.character(Big_Data$DIN)
+      Big_Data$DIN <- as.numeric(Big_Data$DIN)
+
       Big_Data <- Big_Data%>%
         dplyr::arrange(Big_Data$DIN)%>%
         dplyr::group_by(Big_Data$DIN)%>%
@@ -661,7 +671,7 @@ load_HealthCanada_Opioid_Table <- function(filelocation = "", no_download = FALS
 
       Big_Data <- Big_Data[,-19]
 
-      Previous_DIN <- as.data.frame(Big_1[,2])
+      Previous_DIN <- as.data.frame(Big_1[,1])
       Previous_DIN <- unique(Previous_DIN)
       colnames(Previous_DIN) <- "DIN"
 
@@ -719,6 +729,7 @@ load_HealthCanada_Opioid_Table <- function(filelocation = "", no_download = FALS
 
       colnames(Big_Data1) <- c("DIN","Route")
 
+
       Big_Data1 <- Big_Data1 %>%
         dplyr::arrange (.data$DIN,Big_Data1$Route)%>%
         dplyr::group_by(.data$DIN)%>%
@@ -763,14 +774,14 @@ load_HealthCanada_Opioid_Table <- function(filelocation = "", no_download = FALS
       Big_Data <- unique(Big_Data)
       HealthCanada_Opioid_Table <- merge(Big_Data,form,by= "ID")
 
+      HealthCanada_Opioid_Table$DIN <- as.character(HealthCanada_Opioid_Table$DIN)
+
       unlink(paste0(tempdownload_location,"/txtfiles"),recursive = TRUE)
       unlink(paste0(tempdownload_location,"/allfiles"),recursive = TRUE)
 
       # FILES <- list.files(filelocation)
       # files_to_be_deleted <- FILES[grepl("txt$",unlist(FILES))]
       # suppressWarnings(file.remove(paste0(filelocation,"/",files_to_be_deleted)))
-
-
       out_msg <- paste0("The HealthCanada_Opioid_Table was successfully updated to ",
                                   second_table_date,".")
 
@@ -778,7 +789,7 @@ load_HealthCanada_Opioid_Table <- function(filelocation = "", no_download = FALS
       ## Write the new table
       HealthCanada_Opioid_Table_path <- paste0(filelocation,"/",second_table_date,"_HealthCanada_Opioid_Table.xlsx")
       openxlsx::write.xlsx(HealthCanada_Opioid_Table,HealthCanada_Opioid_Table_path)
-      HealthCanada_Opioid_Table$DIN <- readr::parse_number(HealthCanada_Opioid_Table$DIN)
+      #HealthCanada_Opioid_Table$DIN <- readr::parse_number(HealthCanada_Opioid_Table$DIN)
       out <- as.data.frame(HealthCanada_Opioid_Table)
       disclaimer <-  paste0("Not a substitute for medical advise. ",
                             "Please note that the output generated by ",
@@ -902,9 +913,9 @@ MED_50 <- function(Drug_ID,HealthCanada_Opioid_Table){
   if (Drug_ID %in% HealthCanada_Opioid_Table$DIN){
 
     a <- subset(HealthCanada_Opioid_Table,HealthCanada_Opioid_Table$DIN== Drug_ID)
-    out_MED50_per_dispensing_unit <- suppressWarnings(as.numeric(a$`No_tabs/ml assuming 50 MED limit per day`))
+    out_MED50_per_dispensing_unit <- suppressWarnings(as.numeric(a$`No_tabs/ml.assuming.50.MED.limit.per.day`))
     if (is.na(out_MED50_per_dispensing_unit[1])){
-      out_MED50_per_dispensing_unit <- a$`No_tabs/ml assuming 50 MED limit per day`
+      out_MED50_per_dispensing_unit <- a$`No_tabs/ml.assuming.50.MED.limit.per.day`
     }
     return(out_MED50_per_dispensing_unit)
   } else return("The DIN could not be found in the HealthCanada_Opioid_Table.")
@@ -928,14 +939,13 @@ MED_50 <- function(Drug_ID,HealthCanada_Opioid_Table){
 MED_90 <- function(Drug_ID,HealthCanada_Opioid_Table){
   if (Drug_ID %in% HealthCanada_Opioid_Table$DIN){
     a <- subset(HealthCanada_Opioid_Table,HealthCanada_Opioid_Table$DIN== Drug_ID)
-    out_MED90_per_dispensing_unit <- suppressWarnings(as.numeric(a$`No_tabs/ml assuming 90 MED limit per day`))
+    out_MED90_per_dispensing_unit <- suppressWarnings(as.numeric(a$`No_tabs/ml.assuming.90.MED.limit.per.day`))
     if (is.na(out_MED90_per_dispensing_unit[1])){
-      out_MED90_per_dispensing_unit <- a$`No_tabs/ml assuming 90 MED limit per day`
+      out_MED90_per_dispensing_unit <- a$`No_tabs/ml.assuming.90.MED.limit.per.day`
     }
     return(out_MED90_per_dispensing_unit)
   } else return("The DIN could not be found in the HealthCanada_Opioid_Table.")
 }
-
 
 
 
