@@ -1,7 +1,7 @@
 Package: OralOpioids
 Type: Package
 Title: Retrieving Oral Opioid Information
-Version: 1.2.0
+Version: 2.0.0
 Authors@R: 
   c(person(family = "Banerjee",
            given = "Ankona",
@@ -16,8 +16,8 @@ Authors@R:
 Maintainer: Ankona Banerjee <asb426@mail.usask.ca>
 Description: Provides details such as Morphine Equivalent Dose (MED), 
     brand name and opioid content which are calculated of all oral opioids 
-    authorized for sale by Health Canada based on their Drug Identification Number (DIN). 
-    MEDs are calculated based on recommendations by Canadian Institute for Health Information (CIHI) 
+    authorized for sale by Health Canada and the FDA based on their Drug Identification Number (DIN) or National Drug Code (NDC). 
+    MEDs are calculated based on recommendations by Canadian Institute for Health Information (CIHI) **TODO: include FDA** 
     and information obtained from Health Canada's Drug Product Database's monthly data dump. 
     Please note in no way should output from this package be a substitute for medical advise.  
     All medications should only be consumed on prescription from a licensed healthcare provider.
@@ -27,8 +27,7 @@ Encoding: UTF-8
 RoxygenNote: 7.2.3
 Imports: dplyr, ggplot2, tidyr, readr, purrr, forcats, magrittr, plyr,
         readxl, reshape2, stringr, openxlsx, rvest, xml2, utils, rlang
-Suggests: knitr, rmarkdown, testthat (>= 3.0.0)
-Config/testthat/edition: 3
+Suggests: knitr, rmarkdown
 Depends: R (>= 2.10)
 VignetteBuilder: knitr
 NeedsCompilation: no

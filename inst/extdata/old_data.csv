@@ -1,4 +1,4 @@
-,DIN,Keep,Opioid,Form,Route,Brand,MED_per_dispensing_unit,No_tabs/ml assuming 50 MED limit per day,No_tabs/ml assuming 90 MED limit per day,Maximum No_tabs/ml assuming 50 MED limit for 7 days,Maximum No_tabs/ml assuming 50 MED limit for 14 days,Maximum No_tabs/ml assuming 50 MED limit for 30 days,Status1
+,Drug_ID,Keep,Opioid,Form,Route,Brand,MED_per_dispensing_unit,No_tabs/ml assuming 50 MED limit per day,No_tabs/ml assuming 90 MED limit per day,Maximum No_tabs/ml assuming 50 MED limit for 7 days,Maximum No_tabs/ml assuming 50 MED limit for 14 days,Maximum No_tabs/ml assuming 50 MED limit for 30 days,Status1
 316,2341212,NA,BUPRENORPHINE 10 MCG,PATCH,TRANSDERMAL,BUTRANS 10,Couldn't be calculated,NA,NA,NA,NA,NA,MARKETED
 421,2450771,NA,BUPRENORPHINE 15 MCG,PATCH,TRANSDERMAL,BUTRANS 15,Couldn't be calculated,NA,NA,NA,NA,NA,MARKETED
 317,2341220,NA,BUPRENORPHINE 20 MCG,PATCH,TRANSDERMAL,BUTRANS 20,Couldn't be calculated,NA,NA,NA,NA,NA,MARKETED
