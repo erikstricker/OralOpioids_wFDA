@@ -1,4 +1,3 @@
-
 #' OralOpioids: Obtain the latest information on Morphine equivalent doses provided by HealthCanada and the FDA
 #'
 #' This package provides details on Oral Opioids approved for sale by Health Canada and the FDA.
@@ -777,6 +776,8 @@ load_HealthCanada_Opioid_Table <- function(filelocation = "", no_download = FALS
 
       HealthCanada_Opioid_Table$Drug_ID <- as.character(HealthCanada_Opioid_Table$Drug_ID)
 
+
+
       unlink(paste0(tempdownload_location,"/txtfiles"),recursive = TRUE)
       unlink(paste0(tempdownload_location,"/allfiles"),recursive = TRUE)
 
@@ -802,6 +803,18 @@ load_HealthCanada_Opioid_Table <- function(filelocation = "", no_download = FALS
       comment(out) <- c(msg = out_msg,path=HealthCanada_Opioid_Table_path,disclaimer= disclaimer,
                         source_url_data=source_url_data,source_url_dosing=source_url_dosing)
 
+      colnames(out)
+      columns_to_keep <- c("Drug_ID", "Base1", "Base2", "Base3", "Brand", "Form",
+                           "Route", "Opioid", "MED_per_dispensing_unit",
+                           "No_tabs/ml assuming 50 MED limit per day",
+                           "No_tabs/ml assuming 90 MED limit per day",
+                           "Maximum No_tabs/ml assuming 50 MED limit for 7 days",
+                           "Maximum No_tabs/ml assuming 50 MED limit for 14 days",
+                           "Maximum No_tabs/ml assuming 50 MED limit for 30 days",
+                           "last_updated")
+      # Subset the b data frame
+      out_subset <- out[, columns_to_keep, drop = FALSE]
+      Opioid_Table <- out_subset
       ## if verbose is set to TRUE the message will be printed (cat) in the console
       if (verbose) cat(utils::tail(out_msg,1),
                        paste0("DISCLAIMER: ",disclaimer),
@@ -816,7 +829,7 @@ load_HealthCanada_Opioid_Table <- function(filelocation = "", no_download = FALS
 }
 
 
-#load_HealthCanada_Opioid_Table()
+#b <- load_HealthCanada_Opioid_Table()
 #'Obtain the latest Opioid data from the FDA
 #'
 #'\code{load_FDAOpioid_Table} compares the date of the local FDA_Opioid_Table and compares
@@ -1091,7 +1104,6 @@ load_FDAOpioid_Table <- function(filelocation = "", no_download = FALSE, verbose
 
       drug2 <- merge(drug1,bar1,by.x="product_ndc",by.y="ndc",all.x=T,all.y=T)
       drug2 <- subset(drug2,!is.na(Ingredients))
-      colnames(drug2)
       #drug2 <- drug2[,c(1,2,4,5,10,11,14,18,19,23)]
       drug2 <- drug2[,c("product_ndc","generic_name","brand_name","active_ingredients","marketing_category","dosage_form","route",
                         "brand_name_base","pharm_class","Ingredients")]
@@ -1198,7 +1210,25 @@ load_FDAOpioid_Table <- function(filelocation = "", no_download = FALSE, verbose
       drug2$Threshold_30days <- 30*drug2$MED_50_day
 
 
+
+      colnames(drug2)[colnames(drug2) == "product_ndc"] <- "Drug_ID"
+      colnames(drug2)[colnames(drug2) == "MED"] <- "MED_per_dispensing_unit"
+      colnames(drug2)[colnames(drug2) == "Ingredients"] <- "Opioid"
+      colnames(drug2)[colnames(drug2) == "route"] <- "Route"
+      colnames(drug2)[colnames(drug2) == "dosage_form"] <- "Form"
+      colnames(drug2)[colnames(drug2) == "brand_name"] <- "Brand"
+      colnames(drug2)[colnames(drug2) == "MED_50_day"] <- "No_tabs/ml assuming 50 MED limit per day"
+      colnames(drug2)[colnames(drug2) == "MED_90_day"] <- "No_tabs/ml assuming 90 MED limit per day"
+      colnames(drug2)[colnames(drug2) == "Threshold_7days"] <- "Maximum No_tabs/ml assuming 50 MED limit for 7 days"
+      colnames(drug2)[colnames(drug2) == "Threshold_14days"] <- "Maximum No_tabs/ml assuming 50 MED limit for 14 days"
+      colnames(drug2)[colnames(drug2) == "Threshold_30days"] <- "Maximum No_tabs/ml assuming 50 MED limit for 30 days"
+
+      drug2$last_updated <- pmax(file_date, second_table_date)
+
+
       FDA_Opioid_Table <- drug2
+
+
 
       out_msg <- paste0("The FDA_Opioid_Table was successfully updated to ",
                         second_table_date,".")
@@ -1217,13 +1247,25 @@ load_FDAOpioid_Table <- function(filelocation = "", no_download = FALSE, verbose
       comment(out) <- c(msg = out_msg,path=FDA_Opioid_Table_path,disclaimer= disclaimer,
                         source_url_data=source_url_data,source_url_dosing=source_url_dosing)
 
+      columns_to_keep <- c("Drug_ID", "Base1", "Base2", "Base3", "Brand", "Form",
+                           "Route", "Opioid", "MED_per_dispensing_unit",
+                           "No_tabs/ml assuming 50 MED limit per day",
+                           "No_tabs/ml assuming 90 MED limit per day",
+                           "Maximum No_tabs/ml assuming 50 MED limit for 7 days",
+                           "Maximum No_tabs/ml assuming 50 MED limit for 14 days",
+                           "Maximum No_tabs/ml assuming 50 MED limit for 30 days",
+                           "last_updated")
+
+      out_subset <- out[, columns_to_keep, drop = FALSE]
+
+      Opioid_Table <- out_subset
+
       ## if verbose is set to TRUE the message will be printed (cat) in the console
       if (verbose) cat(utils::tail(out_msg,1),
                        paste0("DISCLAIMER: ",disclaimer),
                        "",
                        paste0("Source url of the data: ",source_url_data),
                        paste0("Source url used for dosing: ",source_url_dosing), sep="\n")
-
 
     }
   }
@@ -1401,7 +1443,7 @@ MED_90 <- function(Drug_ID,Opioid_Table){
     }
     return(out_MED90_per_dispensing_unit)
   } else return("The Drug_ID could not be found in the Opioid_Table.")
-}}
+}
 
 
 

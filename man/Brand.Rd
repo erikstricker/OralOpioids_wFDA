@@ -19,11 +19,8 @@ Brand name
 \code{Brand} retrieves the Brand name for an Oral Opioid from the HealthCanada_Opioid_Table.
 }
 \examples{
-
 HealthCanada_Opioid_Table <- load_HealthCanada_Opioid_Table(no_download = TRUE)
 Brand(786535, HealthCanada_Opioid_Table)
-
-
 FDA_Opioid_Table <- load_FDAOpioid_Table(no_download = TRUE)
 Brand("0093-0058", FDA_Opioid_Table)
 }

@@ -23,7 +23,6 @@ Opioid content
 HealthCanada_Opioid_Table <- load_HealthCanada_Opioid_Table(no_download = TRUE)
 Opioid(786535, HealthCanada_Opioid_Table)
 
-
 FDA_Opioid_Table <- load_FDAOpioid_Table(no_download = TRUE)
 Opioid("0093-0058", FDA_Opioid_Table)
 }
