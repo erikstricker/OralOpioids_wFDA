@@ -23,7 +23,10 @@ no. of units to reach 50 MED
 HealthCanada_Opioid_Table <- load_HealthCanada_Opioid_Table(no_download = TRUE)
 MED_50(786535, HealthCanada_Opioid_Table)
 
+<<<<<<< HEAD
 FDA_Opioid_Table <- load_FDAOpioid_Table(no_download = TRUE)
+=======
+>>>>>>> 7a2bf785d7577eb65f08440223de0d0346025664
 MED_50("0093-0058", FDA_Opioid_Table)
 
 }
