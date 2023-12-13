@@ -1361,13 +1361,10 @@ Opioid <- function(Drug_ID,Opioid_Table){
 #'
 #' HealthCanada_Opioid_Table <- load_HealthCanada_Opioid_Table(no_download = TRUE)
 #' Brand(786535, HealthCanada_Opioid_Table)
-
 #'
 #' FDA_Opioid_Table <- load_FDAOpioid_Table(no_download = TRUE)
 #' Brand("0093-0058", FDA_Opioid_Table)
 #'
-
-
 
 
 #' @export
@@ -1377,8 +1374,6 @@ Brand <- function(Drug_ID,Opioid_Table){
   return(a$Brand)}
   else return("The Drug_ID could not be found in the Opioid_Table.")
 }
-
-
 
 #'Maximum number of units/millilitres of oral opioids allowed per day assuming a daily limit of 50 MED/day for a DIN or NDC from the Opioid Table by using the DIN or NDC
 #'
