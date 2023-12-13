@@ -23,6 +23,6 @@ Brand name
 HealthCanada_Opioid_Table <- load_HealthCanada_Opioid_Table(no_download = TRUE)
 Brand(786535, HealthCanada_Opioid_Table)
 
-FDA_Opioid_Table <- load_FDA_Table(no_download = TRUE)
+FDA_Opioid_Table <- load_FDA_Opioid_Table(no_download = TRUE)
 Brand("0093-0058", FDA_Opioid_Table)
 }
