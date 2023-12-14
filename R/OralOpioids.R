@@ -1294,10 +1294,6 @@ load_FDAOpioid_Table <- function(filelocation = "", no_download = FALSE, verbose
 
 #'
 #' FDA_Opioid_Table <- load_FDAOpioid_Table(no_download = TRUE)
-
-#'
-#' FDA_Opioid_Table <- load_FDA_Table(no_download = TRUE)
-
 #' MED("0093-0058", FDA_Opioid_Table)
 
 
@@ -1333,10 +1329,6 @@ MED <- function(Drug_ID,Opioid_Table){
 
 #'
 #' FDA_Opioid_Table <- load_FDAOpioid_Table(no_download = TRUE)
-
-#'
-
-
 #' Opioid("0093-0058", FDA_Opioid_Table)
 
 #' @export
