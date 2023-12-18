@@ -23,7 +23,8 @@ no. of units to reach 90 MED
 HealthCanada_Opioid_Table <- load_HealthCanada_Opioid_Table(no_download = TRUE)
 MED_90(786535, HealthCanada_Opioid_Table)
 
-FDA_Opioid_Table <- load_FDA_Opioid_Table(no_download = TRUE)
+
+FDA_Opioid_Table <- load_FDAOpioid_Table(no_download = TRUE)
 MED_90("0093-0058", FDA_Opioid_Table)
 
 }

@@ -1,3 +1,5 @@
+# OralOpioids 2.0.0
+*Have added FDA Opioids
 
 # OralOpioids 1.2.0
 *Have added @aliases OralOpioids-package to OralOpioids.R
