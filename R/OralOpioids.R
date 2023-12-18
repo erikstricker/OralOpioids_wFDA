@@ -11,36 +11,44 @@
 
 ## Version 2.0.0
 
-#'Obtain the latest Opioid data from Health Canada
+#'Obtain the latest Opioid data from Health Canada/FDA
 #'
-#'\code{load_HealthCanada_Opioid_Table} compares the date of the local HealthCanada_Opioid_Table and compares
-#'it with the latest date of data provided Health Canada. In case the local file is outdated,
+#'\code{load_opioid_data} compares the date of the local Opioid_Table and compares
+#'it with the latest date of data provided Health Canada or FDA. In case the local file is outdated,
 #'an updated file will be generated.
 #'
 #' @param filelocation String. The directory on your system where you want the dataset to be downloaded.
 #' If "", filelocation will be set to the download path within the OralOpioids
 #' package installation directory.
-#@param country String. Either "canada" (Canada), or "usa" (USA). Default: \code{"ca"}.
+#' @param country String. Either "canada" (Canada), or "us" (US). Default: \code{"us"}.
 #' @param no_download Logical. If set to TRUE, no downloads will be executed and no user input is required. Default: \code{FALSE}.
 #' @param verbose Logical. Indicates whether messages will be printed in the console. Default: \code{TRUE}.
-#'
-#'
-#'@return The function returns the HealthCanada_Opioid_Table as a data.frame. Comments on the data.frame
-#'include a status message (msg), the HealthCanada_Opioid_Table save path (path),
+#' @return The function returns the Opioid_Table as a data.frame. Comments on the data.frame
+#'include a status message (msg), the Opioid_Table save path (path),
 #'a disclaimer, and the source for the retrieved data (source_url_data and source_url_dosing).
 #'
 
 
-#' @import ggplot2 tidyr readr forcats readxl reshape2 stringr openxlsx utils magittr
+#' @import ggplot2 tidyr readr forcats readxl reshape2 stringr openxlsx utils jsonlite dplyr
 #' @rawNamespace import(dplyr, except = rename)
+#' @importFrom openxlsx read.xlsx write.xlsx
+#' @importFrom dplyr
+#' @importFrom magittr %>%
+#' @importFrom dplyr %>%
+#' @importFrom utils globalVariables tail menu
+#' @importFrom stringr str_split str_sub word
+#' @importFrom reshape2 dcast
+#' @importFrom tidyr unnest
+#' @importFrom jsonlite fromJSON
+#' @importFrom readr parse_number
 #' @importFrom  plyr rename
 #' @importFrom  rvest html_table
 #' @importFrom rlang .data
 #' @rawNamespace import (xml2, except= as_list)
 #' @rawNamespace import (purrr,except= c(invoke,flatten_raw))
 #' @examples
-#'   HealthCanada_Opioid_Table <- load_HealthCanada_Opioid_Table(no_download = TRUE)
-#'   head(HealthCanada_Opioid_Table)
+#'   Opioid_Table <- load_opioid_data(country= "US")
+#'   head(Opioid_Table)
 
 
 #' @export
@@ -829,58 +837,12 @@ load_HealthCanada_Opioid_Table <- function(filelocation = "", no_download = FALS
 }
 
 
-#b <- load_HealthCanada_Opioid_Table()
-#'Obtain the latest Opioid data from the FDA
-#'
-#'\code{load_FDAOpioid_Table} compares the date of the local FDA_Opioid_Table and compares
-#'it with the latest date of data provided by FDA. In case the local file is outdated,
-#'an updated file will be generated.
-#'
-#' @param filelocation String. The directory on your system where you want the dataset to be downloaded.
-#' If "", filelocation will be set to the download path within the OralOpioids
-#' package installation directory.
-#' @param no_download Logical. If set to TRUE, no downloads will be executed and no user input is required. Default: \code{FALSE}.
-#' @param verbose Logical. Indicates whether messages will be printed in the console. Default: \code{TRUE}.
-#'
-#'
-#'@return The function returns the FDA_Opioid_Table as a data.frame. Comments on the data.frame
-#'include a status message (msg), the FDA_Opioid_Table save path (path),
-#'a disclaimer, and the source for the retrieved data (source_url_data and source_url_dosing).
-#'
-#' @importFrom openxlsx read.xlsx write.xlsx
-#' @importFrom dplyr
-#' @importFrom magittr %>%
-#' @importFrom dplyr %>%
-#' @importFrom rlang .data
-#' @importFrom utils globalVariables tail menu
-#' @importFrom stringr str_split str_sub word
-#' @importFrom readr parse_number
-#' @importFrom reshape2 dcast
-#' @importFrom tidyr unnest
-#' @importFrom jsonlite fromJSON
-#' @import ggplot2 tidyr readr forcats readxl reshape2 stringr openxlsx utils jsonlite dplyr
-#' @rawNamespace import(dplyr, except = rename)
-#' @importFrom plyr rename
-#' @importFrom rvest html_table
-#' @rawNamespace import(xml2, except= as_list)
-#' @rawNamespace import(purrr, except= c(invoke,flatten_raw))
-#' @examples
-#'   FDA_Opioid_Table <- load_FDAOpioid_Table(no_download = TRUE)
-#'   head(FDA_Opioid_Table)
-
-
-#' @export
 load_FDAOpioid_Table <- function(filelocation = "", no_download = FALSE, verbose = TRUE){
 
   if (filelocation == ""){
     filelocation <- paste0(system.file(package = "OralOpioids"),"/download")
   }
 
-
-  ## 1) Get FDA data date and compare with FDAOpioid_Table date
-
-
-  #filelocation <- "C:/Users/u243494/Downloads/FDAOpioids"
 
   second_table_date <- Sys.Date()
 
@@ -1272,6 +1234,19 @@ load_FDAOpioid_Table <- function(filelocation = "", no_download = FALSE, verbose
   return(out)
 }
 
+# Define the main function to load opioid data based on country and Drug ID
+load_opioid_data <- function(country,filelocation = "") {
+  if (tolower(country) == "us") {
+    return(load_FDAOpioid_Table())
+  } else if (tolower(country) == "canada") {
+    return(load_HealthCanada_Opioid_Table())
+  } else {
+    stop("Invalid country. Please specify either 'US' or 'Canada'.")
+  }
+}
+
+load_opioid_data("Canada")
+load_opioid_data("US")
 
 #load_FDAOpioid_Table()
 
@@ -1289,12 +1264,10 @@ load_FDAOpioid_Table <- function(filelocation = "", no_download = FALSE, verbose
 #' @rawNamespace import(dplyr, except = rename)
 #' @examples
 #'
-#' HealthCanada_Opioid_Table <- load_HealthCanada_Opioid_Table(no_download = TRUE)
-#' MED(786535, HealthCanada_Opioid_Table)
-
-#'
-#' FDA_Opioid_Table <- load_FDAOpioid_Table(no_download = TRUE)
-#' MED("0093-0058", FDA_Opioid_Table)
+#' US_Opioid_Table <- load_opioid_data("US")
+#' Canada_Opioid_Table <- load_opioid_data("Canada")
+#' MED(786535, Canada_Opioid_Table)
+#' MED("0093-0058", US_Opioid_Table)
 
 
 #' @export
@@ -1324,12 +1297,11 @@ MED <- function(Drug_ID,Opioid_Table){
 #' @rawNamespace import(dplyr, except = rename)
 #' @examples
 #'
-#' HealthCanada_Opioid_Table <- load_HealthCanada_Opioid_Table(no_download = TRUE)
-#' Opioid(786535, HealthCanada_Opioid_Table)
+#' US_Opioid_Table <- load_opioid_data("US")
+#' Canada_Opioid_Table <- load_opioid_data("Canada")
+#' Opioid(786535, Canada_Opioid_Table)
+#' Opioid("0093-0058", US_Opioid_Table)
 
-#'
-#' FDA_Opioid_Table <- load_FDAOpioid_Table(no_download = TRUE)
-#' Opioid("0093-0058", FDA_Opioid_Table)
 
 #' @export
 Opioid <- function(Drug_ID,Opioid_Table){
@@ -1351,12 +1323,11 @@ Opioid <- function(Drug_ID,Opioid_Table){
 #' @rawNamespace import(dplyr, except = rename)
 #' @examples
 #'
-#' HealthCanada_Opioid_Table <- load_HealthCanada_Opioid_Table(no_download = TRUE)
-#' Brand(786535, HealthCanada_Opioid_Table)
-#'
-#' FDA_Opioid_Table <- load_FDAOpioid_Table(no_download = TRUE)
-#' Brand("0093-0058", FDA_Opioid_Table)
-#'
+#' US_Opioid_Table <- load_opioid_data("US")
+#' Canada_Opioid_Table <- load_opioid_data("Canada")
+#' Brand(786535, Canada_Opioid_Table)
+#' Brand("0093-0058", US_Opioid_Table)
+
 
 
 #' @export
@@ -1379,13 +1350,11 @@ Brand <- function(Drug_ID,Opioid_Table){
 #' @rawNamespace import(dplyr, except = rename)
 #' @examples
 #'
-#' HealthCanada_Opioid_Table <- load_HealthCanada_Opioid_Table(no_download = TRUE)
-#' MED_50(786535, HealthCanada_Opioid_Table)
+#' US_Opioid_Table <- load_opioid_data("US")
+#' Canada_Opioid_Table <- load_opioid_data("Canada")
+#' MED_50(786535, Canada_Opioid_Table)
+#' MED_50("0093-0058", US_Opioid_Table)
 
-#'
-#' FDA_Opioid_Table <- load_FDAOpioid_Table(no_download = TRUE)
-#' MED_50("0093-0058", FDA_Opioid_Table)
-#'
 
 #'
 #' @export
@@ -1412,13 +1381,11 @@ MED_50 <- function(Drug_ID,Opioid_Table){
 #' @rawNamespace import(dplyr, except = rename)
 #' @examples
 #'
-#' HealthCanada_Opioid_Table <- load_HealthCanada_Opioid_Table(no_download = TRUE)
-#' MED_90(786535, HealthCanada_Opioid_Table)
+#' US_Opioid_Table <- load_opioid_data("US")
+#' Canada_Opioid_Table <- load_opioid_data("Canada")
+#' MED_90(786535, Canada_Opioid_Table)
+#' MED_90("0093-0058", US_Opioid_Table)
 
-#'
-#' FDA_Opioid_Table <- load_FDAOpioid_Table(no_download = TRUE)
-#' MED_90("0093-0058", FDA_Opioid_Table)
-#'
 
 #' @export
 MED_90 <- function(Drug_ID,Opioid_Table){
