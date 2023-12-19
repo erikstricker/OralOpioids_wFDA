@@ -1234,7 +1234,7 @@ load_FDAOpioid_Table <- function(filelocation = "", no_download = FALSE, verbose
   return(out)
 }
 
-# Define the main function to load opioid data based on country and Drug ID
+## Define the main function to load opioid data based on country and Drug ID
 load_opioid_data <- function(country,filelocation = "") {
   if (tolower(country) == "us") {
     return(load_FDAOpioid_Table())
