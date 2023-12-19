@@ -1102,14 +1102,14 @@ load_FDAOpioid_Table <- function(filelocation = "", no_download = FALSE, verbose
                            ((drug2$Base1*0.15)/drug2$Base2),drug2$MED)
 
       drug2$MED <- ifelse ((drug2$route=="ORAL" & drug2$Opioid_1=="HYDROCODONE"),
-                           ((drug2$Base1*1.5)/drug2$Base2),drug2$MED)
+                           ((drug2$Base1*1)/drug2$Base2),drug2$MED)
 
       drug2$MED <- ifelse ((drug2$route=="ORAL" & drug2$Opioid_1=="OXYCODONE"),
                            ((drug2$Base1*1.5)/drug2$Base2),drug2$MED)
 
 
       drug2$MED <- ifelse ((drug2$route=="ORAL" & drug2$Opioid_1=="HYDROMORPHONE"),
-                           ((drug2$Base1*5)/drug2$Base2),drug2$MED)
+                           ((drug2$Base1*4)/drug2$Base2),drug2$MED)
 
       drug2$MED <- ifelse ((drug2$route=="RECTAL" & drug2$Opioid_1=="MORPHINE"),
                            ((drug2$Base1*3)/drug2$Base2),drug2$MED)
