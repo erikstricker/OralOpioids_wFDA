@@ -1129,14 +1129,14 @@ load_FDA_Opioid_Table <- function(filelocation = "", no_download = FALSE, verbos
                            ((drug2$Base1*0.15)/drug2$Base2),drug2$MED)
 
       drug2$MED <- ifelse ((drug2$route=="ORAL" & drug2$Opioid_1=="HYDROCODONE"),
-                           ((drug2$Base1*1.5)/drug2$Base2),drug2$MED)
+                           ((drug2$Base1*1)/drug2$Base2),drug2$MED)
 
       drug2$MED <- ifelse ((drug2$route=="ORAL" & drug2$Opioid_1=="OXYCODONE"),
                            ((drug2$Base1*1.5)/drug2$Base2),drug2$MED)
 
 
       drug2$MED <- ifelse ((drug2$route=="ORAL" & drug2$Opioid_1=="HYDROMORPHONE"),
-                           ((drug2$Base1*5)/drug2$Base2),drug2$MED)
+                           ((drug2$Base1*4)/drug2$Base2),drug2$MED)
 
       drug2$MED <- ifelse ((drug2$route=="RECTAL" & drug2$Opioid_1=="MORPHINE"),
                            ((drug2$Base1*3)/drug2$Base2),drug2$MED)
@@ -1170,7 +1170,7 @@ load_FDA_Opioid_Table <- function(filelocation = "", no_download = FALSE, verbos
 
 
       drug2$MED <- ifelse ((drug2$route=="TRANSDERMAL" & drug2$Opioid_1=="FENTANYL"),
-                           ((drug2$Base1*7.2)/drug2$Base2),drug2$MED)
+                           ((drug2$Base1*2.4)/drug2$Base2),drug2$MED)
 
       drug2$MED <- ifelse ((drug2$route=="ORAL" & drug2$Opioid_1=="DIHYDROCODEINE"),
                            ((drug2$Base1*0.25)/drug2$Base2),drug2$MED)
