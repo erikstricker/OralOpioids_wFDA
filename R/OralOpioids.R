@@ -32,7 +32,7 @@
 #'
 
 
-#' @import ggplot2 tidyr readr forcats readxl reshape2 stringr openxlsx utils magrittr dplyr
+#' @import tidyr readr reshape2 stringr openxlsx utils
 #' @rawNamespace import(dplyr, except = rename)
 #' @importFrom  plyr rename
 #' @importFrom  rvest html_table
@@ -55,7 +55,6 @@ load_HealthCanada_Opioid_Table <- function(filelocation = "", no_download = FALS
   ## Get HealthCanada data date ------------------------
 
   content <- xml2::read_html("https://www.canada.ca/en/health-canada/services/drugs-health-products/drug-products/drug-product-database/what-data-extract-drug-product-database.html")
-  #library (dplyr)
   tables <- content %>%
         rvest::html_table(fill = TRUE)
   second_table <- tables[[2]]
@@ -308,7 +307,6 @@ load_HealthCanada_Opioid_Table <- function(filelocation = "", no_download = FALS
 
       Unique_route <- as.data.frame(unique(Opioids$Route))
 
-      #usethis::use_package ("dplyr")
       Opioids <-  Opioids[Opioids$Route %in% c("ORAL","TRANSDERMAL","RECTAL","BUCCAL", "SUBLINGUAL"),]
 
       Opioids_1 <- Opioids [,c(1:3)]
@@ -393,10 +391,6 @@ load_HealthCanada_Opioid_Table <- function(filelocation = "", no_download = FALS
         dplyr::group_by(ID)%>%
         dplyr::mutate(ranks=order(ID))
 
-      #status <- status %>% dplyr::mutate(ranks=row_number())
-
-
-      #use_package ("reshape2")
 
       status <- status[,-3]
 
@@ -416,7 +410,6 @@ load_HealthCanada_Opioid_Table <- function(filelocation = "", no_download = FALS
 
       Opioids_1$Drug_ID <- suppressWarnings(as.numeric(Opioids_1$Drug_ID))
 
-      #usethis::use_package ("stringr")
 
       Opioids_1$Opioid_1 <- stringr::word(Opioids_1$Ingred,1)
       Opioids_1$Opioid <- paste (Opioids_1$Opioid_1, Opioids_1$Dose, Opioids_1$Value)
@@ -846,8 +839,6 @@ load_HealthCanada_Opioid_Table <- function(filelocation = "", no_download = FALS
 #'a disclaimer, and the source for the retrieved data (source_url_data and source_url_dosing).
 #'
 #' @importFrom openxlsx read.xlsx write.xlsx
-#' @importFrom magrittr %>%
-#' @importFrom dplyr %>%
 #' @importFrom rlang .data
 #' @importFrom utils globalVariables tail menu
 #' @importFrom stringr str_split str_sub word
@@ -855,7 +846,7 @@ load_HealthCanada_Opioid_Table <- function(filelocation = "", no_download = FALS
 #' @importFrom reshape2 dcast
 #' @importFrom tidyr unnest
 #' @importFrom jsonlite fromJSON
-#' @import ggplot2 tidyr readr forcats readxl reshape2 stringr openxlsx utils jsonlite
+#' @import tidyr readr reshape2 stringr openxlsx utils
 #' @rawNamespace import(dplyr, except = rename)
 #' @importFrom plyr rename
 #' @importFrom rvest html_table
@@ -1069,7 +1060,6 @@ load_FDA_Opioid_Table <- function(filelocation = "", no_download = FALSE, verbos
       c1 <-  c1[c1$route %in% c("ORAL","TRANSDERMAL","RECTAL","BUCCAL", "SUBLINGUAL"),]
 
       c1$ingred <- paste(c1$name,c1$strength," ")
-      library (dplyr)
       c1 <- unique(c1)
       d <- c1%>%
         dplyr::arrange(product_ndc,ingred)%>%
