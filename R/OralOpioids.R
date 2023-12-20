@@ -862,8 +862,7 @@ load_HealthCanada_Opioid_Table <- function(filelocation = "", no_download = FALS
 #'   FDA_Opioid_Table <- load_FDA_Opioid_Table(no_download = TRUE)
 #'   head(FDA_Opioid_Table)
 
-
-load_FDAOpioid_Table <- function(filelocation = "", no_download = FALSE, verbose = TRUE){
+load_FDA_Opioid_Table <- function(filelocation = "", no_download = FALSE, verbose = TRUE){
 
   if (filelocation == ""){
     filelocation <- paste0(system.file(package = "OralOpioids"),"/download")
@@ -1274,7 +1273,7 @@ load_FDAOpioid_Table <- function(filelocation = "", no_download = FALSE, verbose
 # Define the main function to load opioid data based on country and Drug ID
 load_opioid_data <- function(country,filelocation = "") {
   if (tolower(country) == "us") {
-    return(load_FDAOpioid_Table())
+    return(load_FDA_Opioid_Table())
   } else if (tolower(country) == "canada") {
     return(load_HealthCanada_Opioid_Table())
   } else {
@@ -1337,7 +1336,7 @@ return(out)
 #'@param Drug_ID A numeric value for the DIN or NDC. Exclude all zeros in front.
 #'@param Opioid_Table Opioid dataset which can be loaded by using
 
-#'the \code{load_HealthCanada_Opioid_Table()} or \code{load_FDAOpioid_Table()} function. The name you use to call the function should be input here.
+#'the \code{load_HealthCanada_Opioid_Table()} or \code{load_FDA_Opioid_Table()} function. The name you use to call the function should be input here.
 #'
 #' @return MED: Morphine Equivalent Dose
 #' @rawNamespace import(dplyr, except = rename)
