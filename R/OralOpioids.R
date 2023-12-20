@@ -32,7 +32,7 @@
 #'
 
 
-#' @import ggplot2 tidyr readr forcats readxl reshape2 stringr openxlsx utils magittr dplyr
+#' @import ggplot2 tidyr readr forcats readxl reshape2 stringr openxlsx utils magrittr dplyr
 #' @rawNamespace import(dplyr, except = rename)
 #' @importFrom  plyr rename
 #' @importFrom  rvest html_table
@@ -846,7 +846,7 @@ load_HealthCanada_Opioid_Table <- function(filelocation = "", no_download = FALS
 #'a disclaimer, and the source for the retrieved data (source_url_data and source_url_dosing).
 #'
 #' @importFrom openxlsx read.xlsx write.xlsx
-#' @importFrom magittr %>%
+#' @importFrom magrittr %>%
 #' @importFrom dplyr %>%
 #' @importFrom rlang .data
 #' @importFrom utils globalVariables tail menu
@@ -1263,6 +1263,51 @@ load_FDA_Opioid_Table <- function(filelocation = "", no_download = FALSE, verbos
   return(out)
 }
 
+#'Obtain the latest Opioid data
+#'
+#'\code{load_Opioid_Table} compares the date of the local Opioid_Table and compares
+#'it with the latest date of data. In case the local file is outdated,
+#'an updated file will be generated.
+#'
+#' @param filelocation String. The directory on your system where you want the dataset to be downloaded.
+#' If "", filelocation will be set to the download path within the OralOpioids
+#' package installation directory.
+#' @param country String. Either "ca" (Canada), or "usa" (USA). Default: \code{"ca"}.
+#' @param no_download Logical. If set to TRUE, no downloads will be executed and no user input is required. Default: \code{FALSE}.
+#' @param verbose Logical. Indicates whether messages will be printed in the console. Default: \code{TRUE}.
+#'
+#'
+#'@return The function returns the Opioid_Table as a data.frame. Comments on the data.frame
+#'include a status message (msg), the Opioid_Table save path (path),
+#'a disclaimer, and the source for the retrieved data (source_url_data and source_url_dosing).
+#'
+#' @examples
+#'   FDA_Opioid_Table <- load_Opioid_Table(no_download = TRUE, country = "usa")
+#'   head(FDA_Opioid_Table)
+#'
+#' @export
+load_Opioid_Table <- function(filelocation = "", no_download = FALSE, verbose = TRUE, country = "ca"){
+  canada_terms <- c("ca","canada")
+  usa_terms <- c("us","USA")
+  out <- NULL
+  ## if the given parameter is part of the candada term list
+  if (grepl(paste0("^",country,"%"),canada_terms,ignore.case = TRUE)){
+    out <- load_HealthCanada_Opioid_Table(filelocation = filelocation,
+                          no_download = no_download,
+                          verbose = verbose)
+  } else if (grepl(paste0("^",country,"%"),usa_terms,ignore.case = TRUE)){
+    out <- load_FDA_Opioid_Table(filelocation = filelocation,
+                                 no_download = no_download,
+                                 verbose = verbose)
+  }
+
+  if (is.null(out)){
+    out_msg <- "Please choose a valid country."
+    if (verbose) cat(utils::tail(out_msg,1))
+  }
+
+return(out)
+}
 
 #'Get the Morphine Equivalent Dose (MED) by using the DIN or NDC
 #'
