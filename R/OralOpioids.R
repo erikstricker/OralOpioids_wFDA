@@ -29,11 +29,11 @@
 #'
 
 
-#' @import ggplot2 tidyr readr forcats readxl reshape2 stringr openxlsx utils jsonlite dplyr
+#' @import ggplot2 tidyr readr forcats readxl reshape2 stringr openxlsx utils jsonlite dplyr magrittr
 #' @rawNamespace import(dplyr, except = rename)
 #' @importFrom openxlsx read.xlsx write.xlsx
 #' @importFrom dplyr
-#' @importFrom magittr %>%
+#' @importFrom magrittr %>%
 #' @importFrom dplyr %>%
 #' @importFrom utils globalVariables tail menu
 #' @importFrom stringr str_split str_sub word
@@ -45,7 +45,7 @@
 #' @importFrom  rvest html_table
 #' @importFrom rlang .data
 #' @rawNamespace import (xml2, except= as_list)
-#' @rawNamespace import (purrr,except= c(invoke,flatten_raw))
+#' @rawNamespace import (purrr,except= c(invoke,flatten_raw,flatten))
 #' @examples
 #'   Opioid_Table <- load_opioid_data(country= "US")
 #'   head(Opioid_Table)
@@ -157,7 +157,7 @@ load_HealthCanada_Opioid_Table <- function(filelocation = "", no_download = FALS
       latest_Big_data_from_file <- list_of_HealthCanada_Opioid_Table_files[latest_date == list_of_dates]
 
       out_msg <- paste0("No updated files were downloaded. ",
-                   "The latest Big_data_from was from ",latest_date)
+                   "The latest HealthCanada_Opioid_Table was from ",latest_date)
 
       ## get Big data form from latest_Big_data_from_file
       HealthCanada_Opioid_Table_path <- paste0(filelocation,"/",latest_Big_data_from_file)
@@ -395,7 +395,6 @@ load_HealthCanada_Opioid_Table <- function(filelocation = "", no_download = FALS
       #str (status)
       status$Date <- as.Date(status$Date,"%d-%b-%Y")
 
-
        status <- status%>%
         dplyr::arrange(ID,desc(Date))%>%
         dplyr::group_by(ID)%>%
@@ -405,6 +404,7 @@ load_HealthCanada_Opioid_Table <- function(filelocation = "", no_download = FALS
 
 
       #use_package ("reshape2")
+
 
      status <- status[,-3]
 
@@ -793,7 +793,7 @@ load_HealthCanada_Opioid_Table <- function(filelocation = "", no_download = FALS
       # files_to_be_deleted <- FILES[grepl("txt$",unlist(FILES))]
       # suppressWarnings(file.remove(paste0(filelocation,"/",files_to_be_deleted)))
       out_msg <- paste0("The HealthCanada_Opioid_Table was successfully updated to ",
-                                  second_table_date,".")
+                        second_table_date,".")
 
       HealthCanada_Opioid_Table <- cbind(HealthCanada_Opioid_Table[,c(2:8,19,10:16)],last_updated = second_table_date)
       ## Write the new table
@@ -837,6 +837,44 @@ load_HealthCanada_Opioid_Table <- function(filelocation = "", no_download = FALS
 }
 
 
+#'Obtain the latest Opioid data from the FDA
+#'
+#'\code{load_FDA_Opioid_Table} compares the date of the local FDA_Opioid_Table and compares
+#'it with the latest date of data provided by FDA. In case the local file is outdated,
+#'an updated file will be generated.
+#'
+#' @param filelocation String. The directory on your system where you want the dataset to be downloaded.
+#' If "", filelocation will be set to the download path within the OralOpioids
+#' package installation directory.
+#' @param no_download Logical. If set to TRUE, no downloads will be executed and no user input is required. Default: \code{FALSE}.
+#' @param verbose Logical. Indicates whether messages will be printed in the console. Default: \code{TRUE}.
+#'
+#'
+#'@return The function returns the FDA_Opioid_Table as a data.frame. Comments on the data.frame
+#'include a status message (msg), the FDA_Opioid_Table save path (path),
+#'a disclaimer, and the source for the retrieved data (source_url_data and source_url_dosing).
+#'
+#' @importFrom openxlsx read.xlsx write.xlsx
+#' @importFrom magittr %>%
+#' @importFrom dplyr %>%
+#' @importFrom rlang .data
+#' @importFrom utils globalVariables tail menu
+#' @importFrom stringr str_split str_sub word
+#' @importFrom readr parse_number
+#' @importFrom reshape2 dcast
+#' @importFrom tidyr unnest
+#' @importFrom jsonlite fromJSON
+#' @import ggplot2 tidyr readr forcats readxl reshape2 stringr openxlsx utils jsonlite
+#' @rawNamespace import(dplyr, except = rename)
+#' @importFrom plyr rename
+#' @importFrom rvest html_table
+#' @rawNamespace import(xml2, except= as_list)
+#' @rawNamespace import(purrr, except= c(invoke,flatten_raw))
+#' @examples
+#'   FDA_Opioid_Table <- load_FDA_Opioid_Table(no_download = TRUE)
+#'   head(FDA_Opioid_Table)
+
+
 load_FDAOpioid_Table <- function(filelocation = "", no_download = FALSE, verbose = TRUE){
 
   if (filelocation == ""){
@@ -844,7 +882,11 @@ load_FDAOpioid_Table <- function(filelocation = "", no_download = FALSE, verbose
   }
 
 
-  second_table_date <- Sys.Date()
+
+  ## 1) Get FDA data date and compare with FDAOpioid_Table date
+
+
+  second_table_date <- as.character(Sys.Date())
 
   ## Get FDAOpioid_Table date ---------------------
   FDA_Opioid_Table_is_old <- TRUE
@@ -963,10 +1005,17 @@ load_FDAOpioid_Table <- function(filelocation = "", no_download = FALSE, verbose
 
       ## 1) Get FDA data
 
+
       tmp <- tempfile()
       download.file("https://download.open.fda.gov/drug/ndc/drug-ndc-0001-of-0001.json.zip",destfile =tmp,quiet = FALSE, mode = "wb",flatten=T,simplifyVector = TRUE)
       tmp1 <- unzip(tmp)
       result <- jsonlite::fromJSON(tmp1)
+
+      temp <- tempfile()
+      download.file("https://download.open.fda.gov/drug/ndc/drug-ndc-0001-of-0001.json.zip",temp,quiet = FALSE, mode = "wb",flatten=T,simplifyVector = TRUE)
+      tmp1 <- unzip(temp)
+      result <- jsonlite::fromJSON(tmp1)
+      unlink(temp,recursive = TRUE)
       drug <- result$results
       g1 <- drug[,c("product_ndc","pharm_class")]
 
@@ -1022,9 +1071,9 @@ load_FDAOpioid_Table <- function(filelocation = "", no_download = FALSE, verbose
       unique_chemicals <- as.data.frame(unique_chemicals)
 
       c1 <- subset(c, !(name %in% c('ACETAMINOPHEN','BUTALBITAL','CAFFEINE','MEPERDINE','DIMETHICONE','GUAIFENESIN','PHENYLEPHRINE HYDROCHLORIDE',
-                                          'PROMETHAZINE HYDROCHLORIDE','HOMATROPINE METHYLBROMIDE','NALOXEGOL OXALATE','ASPIRIN','ALVIMOPAN','BROMPHENIRAMINE MALEATE',
-                                          "IBUPROFEN","CHLORPHENIRAMINE MALEATE","TRIPROLIDINE HYDROCHLORIDE","BUPROPION HYDROCHLORIDE","CARISOPRODOL","PSEUDOEPHEDRINE HYDROCHLORIDE",
-                                          "NALDEMEDINE TOSYLATE","ELUXADOLINE","CHLORPHENIRAMINE","METHYLNATREXONE BROMIDE","OLANZAPINE","CELECOXIB")))
+                                    'PROMETHAZINE HYDROCHLORIDE','HOMATROPINE METHYLBROMIDE','NALOXEGOL OXALATE','ASPIRIN','ALVIMOPAN','BROMPHENIRAMINE MALEATE',
+                                    "IBUPROFEN","CHLORPHENIRAMINE MALEATE","TRIPROLIDINE HYDROCHLORIDE","BUPROPION HYDROCHLORIDE","CARISOPRODOL","PSEUDOEPHEDRINE HYDROCHLORIDE",
+                                    "NALDEMEDINE TOSYLATE","ELUXADOLINE","CHLORPHENIRAMINE","METHYLNATREXONE BROMIDE","OLANZAPINE","CELECOXIB")))
 
       colnames(c1)[1] <- "product_ndc"
 
@@ -1184,6 +1233,7 @@ load_FDAOpioid_Table <- function(filelocation = "", no_download = FALSE, verbose
       colnames(drug2)[colnames(drug2) == "Threshold_7days"] <- "Maximum No_tabs/ml assuming 50 MED limit for 7 days"
       colnames(drug2)[colnames(drug2) == "Threshold_14days"] <- "Maximum No_tabs/ml assuming 50 MED limit for 14 days"
       colnames(drug2)[colnames(drug2) == "Threshold_30days"] <- "Maximum No_tabs/ml assuming 50 MED limit for 30 days"
+
 
       drug2$last_updated <- pmax(file_date, second_table_date)
 
