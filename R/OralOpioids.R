@@ -1270,18 +1270,6 @@ load_FDA_Opioid_Table <- function(filelocation = "", no_download = FALSE, verbos
 }
 
 
-# Define the main function to load opioid data based on country and Drug ID
-load_opioid_data <- function(country,filelocation = "") {
-  if (tolower(country) == "us") {
-    return(load_FDA_Opioid_Table())
-  } else if (tolower(country) == "canada") {
-    return(load_HealthCanada_Opioid_Table())
-  } else {
-    stop("Invalid country. Please specify either 'US' or 'Canada'.")
-  }
-}
-
-
 #'Obtain the latest Opioid data
 #'
 #'\code{load_Opioid_Table} compares the date of the local Opioid_Table and compares
@@ -1306,7 +1294,7 @@ load_opioid_data <- function(country,filelocation = "") {
 #'
 #' @export
 load_Opioid_Table <- function(filelocation = "", no_download = FALSE, verbose = TRUE, country = "ca"){
-  canada_terms <- c("ca","canada")
+  canada_terms <- c("ca","can","canada")
   usa_terms <- c("us","USA")
   out <- NULL
   ## if the given parameter is part of the candada term list
