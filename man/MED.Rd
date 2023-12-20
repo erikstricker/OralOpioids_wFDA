@@ -10,7 +10,7 @@ MED(Drug_ID, Opioid_Table)
 \item{Drug_ID}{A numeric value for the DIN or NDC. Exclude all zeros in front.}
 
 \item{Opioid_Table}{Opioid dataset which can be loaded by using
-the \code{load_HealthCanada_Opioid_Table()} or \code{load_FDAOpioid_Table()} function. The name you use to call the function should be input here.}
+the \code{load_HealthCanada_Opioid_Table()} or \code{load_FDA_Opioid_Table()} function. The name you use to call the function should be input here.}
 }
 \value{
 MED: Morphine Equivalent Dose

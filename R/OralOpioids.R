@@ -44,7 +44,7 @@
 #' @rawNamespace import (xml2, except= as_list)
 #' @rawNamespace import (purrr,except= c(invoke,flatten_raw,flatten))
 #' @examples
-#'   Opioid_Table <- load_opioid_data(country= "US")
+#'   Opioid_Table <- load_opioid_data(no_download = TRUE, country= "US")
 #'   head(Opioid_Table)
 
 
@@ -54,7 +54,7 @@ load_HealthCanada_Opioid_Table <- function(filelocation = "", no_download = FALS
   if (filelocation == ""){
     filelocation <- paste0(system.file(package = "OralOpioids"),"/download")
   }
-  usethis::use_package ("dplyr")
+
   ## 1) Get HealthCanada data date and compare with HealthCanada_Opioid_Table date
   ## Get HealthCanada data date ------------------------
 
@@ -1007,7 +1007,6 @@ load_FDA_Opioid_Table <- function(filelocation = "", no_download = FALSE, verbos
       g1 <- drug[,c("product_ndc","pharm_class")]
 
       colnames(g1) <- c("colA","colB")
-      usethis::use_package("tidyr")
       h1 <- tidyr::unnest(g1, colB)
 
       h1 <- unique(h1)
@@ -1027,7 +1026,6 @@ load_FDA_Opioid_Table <- function(filelocation = "", no_download = FALSE, verbos
       b1 <- merge(b1,Opioid_ndc,by="product_ndc")
 
       colnames(b1) <- c("colA","colB","brand_name")
-      usethis::use_package("dplyr")
       c <- tidyr::unnest(b1, c(colB, brand_name))
 
       c <- unique(c)
@@ -1330,8 +1328,8 @@ return(out)
 #' @rawNamespace import(dplyr, except = rename)
 #' @examples
 #'
-#' US_Opioid_Table <- load_opioid_data("US")
-#' Canada_Opioid_Table <- load_opioid_data("Canada")
+#' US_Opioid_Table <- load_Opioid_Table(no_download = TRUE, country="US")
+#' Canada_Opioid_Table <- load_Opioid_Table(no_download = TRUE, country="Canada")
 #' MED(786535, Canada_Opioid_Table)
 #' MED("0093-0058", US_Opioid_Table)
 
@@ -1363,8 +1361,8 @@ MED <- function(Drug_ID,Opioid_Table){
 #' @rawNamespace import(dplyr, except = rename)
 #' @examples
 #'
-#' US_Opioid_Table <- load_opioid_data("US")
-#' Canada_Opioid_Table <- load_opioid_data("Canada")
+#' US_Opioid_Table <- load_Opioid_Table(no_download = TRUE, country="US")
+#' Canada_Opioid_Table <- load_Opioid_Table(no_download = TRUE, country="Canada")
 #' Opioid(786535, Canada_Opioid_Table)
 #' Opioid("0093-0058", US_Opioid_Table)
 
@@ -1389,8 +1387,8 @@ Opioid <- function(Drug_ID,Opioid_Table){
 #' @rawNamespace import(dplyr, except = rename)
 #' @examples
 #'
-#' US_Opioid_Table <- load_opioid_data("US")
-#' Canada_Opioid_Table <- load_opioid_data("Canada")
+#' US_Opioid_Table <- load_Opioid_Table(no_download = TRUE, country="US")
+#' Canada_Opioid_Table <- load_Opioid_Table(no_download = TRUE, country="Canada")
 #' Brand(786535, Canada_Opioid_Table)
 #' Brand("0093-0058", US_Opioid_Table)
 
@@ -1416,8 +1414,8 @@ Brand <- function(Drug_ID,Opioid_Table){
 #' @rawNamespace import(dplyr, except = rename)
 #' @examples
 #'
-#' US_Opioid_Table <- load_opioid_data("US")
-#' Canada_Opioid_Table <- load_opioid_data("Canada")
+#' US_Opioid_Table <- load_Opioid_Table(no_download = TRUE, country="US")
+#' Canada_Opioid_Table <- load_Opioid_Table(no_download = TRUE, country="Canada")
 #' MED_50(786535, Canada_Opioid_Table)
 #' MED_50("0093-0058", US_Opioid_Table)
 
@@ -1447,8 +1445,8 @@ MED_50 <- function(Drug_ID,Opioid_Table){
 #' @rawNamespace import(dplyr, except = rename)
 #' @examples
 #'
-#' US_Opioid_Table <- load_opioid_data("US")
-#' Canada_Opioid_Table <- load_opioid_data("Canada")
+#' US_Opioid_Table <- load_Opioid_Table(no_download = TRUE, country="US")
+#' Canada_Opioid_Table <- load_Opioid_Table(no_download = TRUE, country="Canada")
 #' MED_90(786535, Canada_Opioid_Table)
 #' MED_90("0093-0058", US_Opioid_Table)
 

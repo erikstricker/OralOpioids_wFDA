@@ -35,7 +35,7 @@ healthcare provider
 
 ```R
 library(OralOpioids)
-US_Opioid_Table <- load_opioid_data("US")
+US_Opioid_Table <- load_Opioid_Table(country="US")
 ```
 
 ```R
@@ -45,7 +45,7 @@ head(US_Opioid_Table)
 
 ```R
 library(OralOpioids)
-Canada_Opioid_Table <- load_opioid_data("Canada")
+Canada_Opioid_Table <- load_Opioid_Table(country="Canada")
 ```
 
 ```R
