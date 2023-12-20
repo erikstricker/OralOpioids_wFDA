@@ -11,20 +11,22 @@
 
 ## Version 2.0.0
 
-#'Obtain the latest Opioid data from Health Canada/FDA
+#'Obtain the latest Opioid data from Health Canada
 #'
-#'\code{load_opioid_data} compares the date of the local Opioid_Table and compares
-#'it with the latest date of data provided Health Canada or FDA. In case the local file is outdated,
+#'\code{load_HealthCanada_Opioid_Table} compares the date of the local HealthCanada_Opioid_Table and compares
+#'it with the latest date of data provided Health Canada. In case the local file is outdated,
 #'an updated file will be generated.
 #'
 #' @param filelocation String. The directory on your system where you want the dataset to be downloaded.
 #' If "", filelocation will be set to the download path within the OralOpioids
 #' package installation directory.
-#' @param country String. Either "canada" (Canada), or "us" (US). Default: \code{"us"}.
+#@param country String. Either "canada" (Canada), or "usa" (USA). Default: \code{"ca"}.
 #' @param no_download Logical. If set to TRUE, no downloads will be executed and no user input is required. Default: \code{FALSE}.
 #' @param verbose Logical. Indicates whether messages will be printed in the console. Default: \code{TRUE}.
-#' @return The function returns the Opioid_Table as a data.frame. Comments on the data.frame
-#'include a status message (msg), the Opioid_Table save path (path),
+#'
+#'
+#'@return The function returns the HealthCanada_Opioid_Table as a data.frame. Comments on the data.frame
+#'include a status message (msg), the HealthCanada_Opioid_Table save path (path),
 #'a disclaimer, and the source for the retrieved data (source_url_data and source_url_dosing).
 #'
 
@@ -32,7 +34,6 @@
 #' @import utils
 #' @rawNamespace import(dplyr, except = rename)
 #' @importFrom openxlsx read.xlsx write.xlsx
-#' @importFrom dplyr %>%
 #' @importFrom stringr str_split str_sub word
 #' @importFrom reshape2 dcast
 #' @importFrom tidyr unnest
@@ -44,8 +45,8 @@
 #' @rawNamespace import (xml2, except= as_list)
 #' @rawNamespace import (purrr,except= c(invoke,flatten_raw,flatten))
 #' @examples
-#'   Opioid_Table <- load_opioid_data(no_download = TRUE, country= "US")
-#'   head(Opioid_Table)
+#'   HealthCanada_Opioid_Table <- load_HealthCanada_Opioid_Table(no_download = TRUE)
+#'   head(HealthCanada_Opioid_Table)
 
 
 #' @export
@@ -97,7 +98,7 @@ load_HealthCanada_Opioid_Table <- function(filelocation = "", no_download = FALS
 
     ## get Big data form from downloaded_files[i]
     HealthCanada_Opioid_Table_path <- paste0(filelocation,"/",downloaded_files[i])
-    HealthCanada_Opioid_Table <- openxlsx::read.xlsx(HealthCanada_Opioid_Table_path)
+    HealthCanada_Opioid_Table <- openxlsx::read.xlsx(HealthCanada_Opioid_Table_path,sep.names = " ")
     HealthCanada_Opioid_Table$Drug_ID <- readr::parse_number(HealthCanada_Opioid_Table$Drug_ID)
     out <- as.data.frame(HealthCanada_Opioid_Table)
     disclaimer <-  paste0("Not a substitute for medical advise. ",
@@ -157,7 +158,7 @@ load_HealthCanada_Opioid_Table <- function(filelocation = "", no_download = FALS
 
       ## get Big data form from latest_Big_data_from_file
       HealthCanada_Opioid_Table_path <- paste0(filelocation,"/",latest_Big_data_from_file)
-      HealthCanada_Opioid_Table <- openxlsx::read.xlsx(HealthCanada_Opioid_Table_path)
+      HealthCanada_Opioid_Table <- openxlsx::read.xlsx(HealthCanada_Opioid_Table_path,sep.names = " ")
       HealthCanada_Opioid_Table$Drug_ID <- readr::parse_number(HealthCanada_Opioid_Table$Drug_ID)
       out <- as.data.frame(HealthCanada_Opioid_Table)
       disclaimer <-  paste0("Not a substitute for medical advise. ",
@@ -391,10 +392,10 @@ load_HealthCanada_Opioid_Table <- function(filelocation = "", no_download = FALS
       status$Date <- as.Date(status$Date,"%d-%b-%Y")
 
 
-      status <- status%>%
-        dplyr::arrange(ID,desc(Date))%>%
-        dplyr::group_by(ID)%>%
-        dplyr::mutate(ranks=order(ID))
+      status <- status %>%
+        dplyr::arrange(status$ID,desc(status$Date)) %>%
+        dplyr::group_by(status$ID) %>%
+        dplyr::mutate(ranks=order(.data$ID))
 
 
 
@@ -448,9 +449,9 @@ load_HealthCanada_Opioid_Table <- function(filelocation = "", no_download = FALS
 
 
       Big_1 <- Big_1%>%
-        dplyr::arrange(Drug_ID,desc(MED_per_dispensing_unit))%>%
-        dplyr::group_by(Drug_ID)%>%
-        dplyr::mutate(ranks=order(Drug_ID))
+        dplyr::arrange(Big_1$Drug_ID,desc(Big_1$MED_per_dispensing_unit))%>%
+        dplyr::group_by(Big_1$Drug_ID)%>%
+        dplyr::mutate(ranks=order(.data$Drug_ID))
 
 
       Big_2 <- reshape2::dcast (Big_1,Drug_ID~ ranks, value.var= "MED_per_dispensing_unit",margins="Drug_ID",fun.aggregate = toString)
@@ -665,9 +666,9 @@ load_HealthCanada_Opioid_Table <- function(filelocation = "", no_download = FALS
       Big_Data$Drug_ID <- as.numeric(Big_Data$Drug_ID)
 
       Big_Data <- Big_Data%>%
-        dplyr::arrange(Drug_ID)%>%
-        dplyr::group_by(Drug_ID)%>%
-        dplyr::mutate(ranks=order(Drug_ID))
+        dplyr::arrange(Big_Data$Drug_ID)%>%
+        dplyr::group_by(Big_Data$Drug_ID)%>%
+        dplyr::mutate(ranks=order(.data$Drug_ID))
 
       Big_Data <- Big_Data[,-19]
 
@@ -689,7 +690,7 @@ load_HealthCanada_Opioid_Table <- function(filelocation = "", no_download = FALS
       #Big_Data <- Big_Data[,c(1:11)]
 
       Drug_ID_count <- Big_Data %>%
-        dplyr::group_by(Drug_ID,MED_per_dispensing_unit) %>%
+        dplyr::group_by(Big_Data$Drug_ID,Big_Data$MED_per_dispensing_unit) %>%
         dplyr::tally()
 
 
@@ -708,8 +709,8 @@ load_HealthCanada_Opioid_Table <- function(filelocation = "", no_download = FALS
       Big_Data1 <- as.data.frame(Big_Data1)
 
       Big_Data1 <- Big_Data1 %>%
-        dplyr::group_by(Drug_ID)%>%
-        dplyr::mutate(rank=order(Drug_ID))
+        dplyr::group_by(Big_Data1$Drug_ID)%>%
+        dplyr::mutate(rank=order(.data$Drug_ID))
 
 
 
@@ -731,9 +732,9 @@ load_HealthCanada_Opioid_Table <- function(filelocation = "", no_download = FALS
 
 
       Big_Data1 <- Big_Data1 %>%
-        dplyr::arrange (Drug_ID,Route)%>%
-        dplyr::group_by(Drug_ID)%>%
-        dplyr::mutate(rank=order(Drug_ID))
+        dplyr::arrange (Big_Data1$Drug_ID,Big_Data1$Route)%>%
+        dplyr::group_by(Big_Data1$Drug_ID)%>%
+        dplyr::mutate(rank=order(.data$Drug_ID))
 
 
 
@@ -813,7 +814,7 @@ load_HealthCanada_Opioid_Table <- function(filelocation = "", no_download = FALS
                            "last_updated")
       # Subset the b data frame
       out_subset <- out[, columns_to_keep, drop = FALSE]
-      Opioid_Table <- out_subset
+      out <- out_subset
       ## if verbose is set to TRUE the message will be printed (cat) in the console
       if (verbose) cat(utils::tail(out_msg,1),
                        paste0("DISCLAIMER: ",disclaimer),
@@ -861,7 +862,7 @@ load_HealthCanada_Opioid_Table <- function(filelocation = "", no_download = FALS
 #' @examples
 #'   FDA_Opioid_Table <- load_FDA_Opioid_Table(no_download = TRUE)
 #'   head(FDA_Opioid_Table)
-
+#' @export
 load_FDA_Opioid_Table <- function(filelocation = "", no_download = FALSE, verbose = TRUE){
 
   if (filelocation == ""){
@@ -905,7 +906,7 @@ load_FDA_Opioid_Table <- function(filelocation = "", no_download = FALSE, verbos
 
     ## get Big data form from downloaded_files[i]
     FDA_Opioid_Table_path <- paste0(filelocation,"/",downloaded_files[i])
-    FDA_Opioid_Table <- openxlsx::read.xlsx(FDA_Opioid_Table_path)
+    FDA_Opioid_Table <- openxlsx::read.xlsx(FDA_Opioid_Table_path,sep.names = " ")
     out <- as.data.frame(FDA_Opioid_Table)
     disclaimer <-  paste0("Not a substitute for medical advise. ",
                           "Please note that the output generated by ",
@@ -964,7 +965,7 @@ load_FDA_Opioid_Table <- function(filelocation = "", no_download = FALSE, verbos
 
       ## get Big data form from latest_Big_data_from_file
       FDA_Opioid_Table_path <- paste0(filelocation,"/",latest_Big_data_from_file)
-      FDA_Opioid_Table <- openxlsx::read.xlsx(FDA_Opioid_Table_path)
+      FDA_Opioid_Table <- openxlsx::read.xlsx(FDA_Opioid_Table_path,sep.names = " ")
       out <- as.data.frame(FDA_Opioid_Table)
       disclaimer <-  paste0("Not a substitute for medical advise. ",
                             "Please note that the output generated by ",
@@ -992,12 +993,6 @@ load_FDA_Opioid_Table <- function(filelocation = "", no_download = FALSE, verbos
 
       ## 1) Get FDA data
 
-
-      tmp <- tempfile()
-      download.file("https://download.open.fda.gov/drug/ndc/drug-ndc-0001-of-0001.json.zip",destfile =tmp,quiet = FALSE, mode = "wb",flatten=T,simplifyVector = TRUE)
-      tmp1 <- unzip(tmp)
-      result <- jsonlite::fromJSON(tmp1)
-
       temp <- tempfile()
       download.file("https://download.open.fda.gov/drug/ndc/drug-ndc-0001-of-0001.json.zip",temp,quiet = FALSE, mode = "wb",flatten=T,simplifyVector = TRUE)
       tmp1 <- unzip(temp)
@@ -1007,7 +1002,7 @@ load_FDA_Opioid_Table <- function(filelocation = "", no_download = FALSE, verbos
       g1 <- drug[,c("product_ndc","pharm_class")]
 
       colnames(g1) <- c("colA","colB")
-      h1 <- tidyr::unnest(g1, colB)
+      h1 <- g1 %>% tidyr::unnest(.data$colB)
 
       h1 <- unique(h1)
 
@@ -1026,7 +1021,7 @@ load_FDA_Opioid_Table <- function(filelocation = "", no_download = FALSE, verbos
       b1 <- merge(b1,Opioid_ndc,by="product_ndc")
 
       colnames(b1) <- c("colA","colB","brand_name")
-      c <- tidyr::unnest(b1, c(colB, brand_name))
+      c <- b1 %>% tidyr::unnest(.data$colB, .data$brand_name)
 
       c <- unique(c)
 
@@ -1054,7 +1049,7 @@ load_FDA_Opioid_Table <- function(filelocation = "", no_download = FALSE, verbos
 
       unique_chemicals <- as.data.frame(unique_chemicals)
 
-      c1 <- subset(c, !(name %in% c('ACETAMINOPHEN','BUTALBITAL','CAFFEINE','MEPERDINE','DIMETHICONE','GUAIFENESIN','PHENYLEPHRINE HYDROCHLORIDE',
+      c1 <- subset(c, !(c$name %in% c('ACETAMINOPHEN','BUTALBITAL','CAFFEINE','MEPERDINE','DIMETHICONE','GUAIFENESIN','PHENYLEPHRINE HYDROCHLORIDE',
                                     'PROMETHAZINE HYDROCHLORIDE','HOMATROPINE METHYLBROMIDE','NALOXEGOL OXALATE','ASPIRIN','ALVIMOPAN','BROMPHENIRAMINE MALEATE',
                                     "IBUPROFEN","CHLORPHENIRAMINE MALEATE","TRIPROLIDINE HYDROCHLORIDE","BUPROPION HYDROCHLORIDE","CARISOPRODOL","PSEUDOEPHEDRINE HYDROCHLORIDE",
                                     "NALDEMEDINE TOSYLATE","ELUXADOLINE","CHLORPHENIRAMINE","METHYLNATREXONE BROMIDE","OLANZAPINE","CELECOXIB")))
@@ -1073,10 +1068,10 @@ load_FDA_Opioid_Table <- function(filelocation = "", no_download = FALSE, verbos
 
       c1$ingred <- paste(c1$name,c1$strength," ")
       c1 <- unique(c1)
-      d <- c1%>%
-        dplyr::arrange(product_ndc,ingred)%>%
-        dplyr::group_by(product_ndc)%>%
-        dplyr::mutate(ranks=order(product_ndc))
+      d <- c1 %>%
+        dplyr::arrange(c1$product_ndc,c1$ingred)%>%
+        dplyr::group_by(c1$product_ndc)%>%
+        dplyr::mutate(ranks=order(.data$product_ndc))
 
 
 
@@ -1097,7 +1092,7 @@ load_FDA_Opioid_Table <- function(filelocation = "", no_download = FALSE, verbos
 
 
       drug2 <- merge(drug1,bar1,by.x="product_ndc",by.y="ndc",all.x=T,all.y=T)
-      drug2 <- subset(drug2,!is.na(Ingredients))
+      drug2 <- subset(drug2,!is.na(drug2$Ingredients))
       #drug2 <- drug2[,c(1,2,4,5,10,11,14,18,19,23)]
       drug2 <- drug2[,c("product_ndc","generic_name","brand_name","active_ingredients","marketing_category","dosage_form","route",
                         "brand_name_base","pharm_class","Ingredients")]
@@ -1105,7 +1100,7 @@ load_FDA_Opioid_Table <- function(filelocation = "", no_download = FALSE, verbos
       drug2 <- unique(drug2)
 
       forms1_list <- drug2 %>%
-        dplyr::group_by(dosage_form)%>%
+        dplyr::group_by(drug2$dosage_form)%>%
         dplyr::tally()
 
 
@@ -1253,7 +1248,7 @@ load_FDA_Opioid_Table <- function(filelocation = "", no_download = FALSE, verbos
 
       out_subset <- out[, columns_to_keep, drop = FALSE]
 
-      Opioid_Table <- out_subset
+      out <- out_subset
 
       ## if verbose is set to TRUE the message will be printed (cat) in the console
       if (verbose) cat(utils::tail(out_msg,1),
@@ -1296,16 +1291,15 @@ load_Opioid_Table <- function(filelocation = "", no_download = FALSE, verbose = 
   usa_terms <- c("us","USA")
   out <- NULL
   ## if the given parameter is part of the candada term list
-  if (grepl(paste0("^",country,"%"),canada_terms,ignore.case = TRUE)){
+  if (any(grepl(paste0("^",country,"$"),canada_terms,ignore.case = TRUE))){
     out <- load_HealthCanada_Opioid_Table(filelocation = filelocation,
                           no_download = no_download,
                           verbose = verbose)
-  } else if (grepl(paste0("^",country,"%"),usa_terms,ignore.case = TRUE)){
+  } else if (any(grepl(paste0("^",country,"$"),usa_terms,ignore.case = TRUE))){
     out <- load_FDA_Opioid_Table(filelocation = filelocation,
                                  no_download = no_download,
                                  verbose = verbose)
   }
-
   if (is.null(out)){
     out_msg <- "Please choose a valid country."
     if (verbose) cat(utils::tail(out_msg,1))
@@ -1328,10 +1322,10 @@ return(out)
 #' @rawNamespace import(dplyr, except = rename)
 #' @examples
 #'
-#' US_Opioid_Table <- load_Opioid_Table(no_download = TRUE, country="US")
-#' Canada_Opioid_Table <- load_Opioid_Table(no_download = TRUE, country="Canada")
-#' MED(786535, Canada_Opioid_Table)
-#' MED("0093-0058", US_Opioid_Table)
+#' FDA_Opioid_Table <- load_Opioid_Table(no_download = TRUE, country="US")
+#' HealthCanada_Opioid_Table <- load_Opioid_Table(no_download = TRUE, country="Canada")
+#' MED(786535, HealthCanada_Opioid_Table)
+#' MED("0093-0058", FDA_Opioid_Table)
 
 
 #' @export
@@ -1361,10 +1355,10 @@ MED <- function(Drug_ID,Opioid_Table){
 #' @rawNamespace import(dplyr, except = rename)
 #' @examples
 #'
-#' US_Opioid_Table <- load_Opioid_Table(no_download = TRUE, country="US")
-#' Canada_Opioid_Table <- load_Opioid_Table(no_download = TRUE, country="Canada")
-#' Opioid(786535, Canada_Opioid_Table)
-#' Opioid("0093-0058", US_Opioid_Table)
+#' FDA_Opioid_Table <- load_Opioid_Table(no_download = TRUE, country="US")
+#' HealthCanada_Opioid_Table <- load_Opioid_Table(no_download = TRUE, country="Canada")
+#' Opioid(786535, HealthCanada_Opioid_Table)
+#' Opioid("0093-0058", FDA_Opioid_Table)
 
 
 #' @export
@@ -1387,10 +1381,10 @@ Opioid <- function(Drug_ID,Opioid_Table){
 #' @rawNamespace import(dplyr, except = rename)
 #' @examples
 #'
-#' US_Opioid_Table <- load_Opioid_Table(no_download = TRUE, country="US")
-#' Canada_Opioid_Table <- load_Opioid_Table(no_download = TRUE, country="Canada")
-#' Brand(786535, Canada_Opioid_Table)
-#' Brand("0093-0058", US_Opioid_Table)
+#' FDA_Opioid_Table <- load_Opioid_Table(no_download = TRUE, country="US")
+#' HealthCanada_Opioid_Table <- load_Opioid_Table(no_download = TRUE, country="Canada")
+#' Brand(786535, HealthCanada_Opioid_Table)
+#' Brand("0093-0058", FDA_Opioid_Table)
 
 
 
@@ -1414,10 +1408,10 @@ Brand <- function(Drug_ID,Opioid_Table){
 #' @rawNamespace import(dplyr, except = rename)
 #' @examples
 #'
-#' US_Opioid_Table <- load_Opioid_Table(no_download = TRUE, country="US")
-#' Canada_Opioid_Table <- load_Opioid_Table(no_download = TRUE, country="Canada")
-#' MED_50(786535, Canada_Opioid_Table)
-#' MED_50("0093-0058", US_Opioid_Table)
+#' FDA_Opioid_Table <- load_Opioid_Table(no_download = TRUE, country="US")
+#' HealthCanada_Opioid_Table <- load_Opioid_Table(no_download = TRUE, country="Canada")
+#' MED_50(786535, HealthCanada_Opioid_Table)
+#' MED_50("0093-0058", FDA_Opioid_Table)
 
 
 #'
@@ -1425,9 +1419,9 @@ Brand <- function(Drug_ID,Opioid_Table){
 MED_50 <- function(Drug_ID,Opioid_Table){
   if (Drug_ID %in% Opioid_Table$Drug_ID){
     a <- Opioid_Table[which(Opioid_Table$Drug_ID == Drug_ID),]
-    out_MED50_per_dispensing_unit <- suppressWarnings(as.numeric(a$`No_tabs/ml.assuming.50.MED.limit.per.day`))
+    out_MED50_per_dispensing_unit <- suppressWarnings(as.numeric(a$`No_tabs/ml assuming 50 MED limit per day`))
     if (is.na(out_MED50_per_dispensing_unit[1])){
-      out_MED50_per_dispensing_unit <- a$`No_tabs/ml.assuming.50.MED.limit.per.day`
+      out_MED50_per_dispensing_unit <- a$`No_tabs/ml assuming 50 MED limit per day`
     }
     return(out_MED50_per_dispensing_unit)
   } else return("The Drug_ID could not be found in the Opioid_Table.")
@@ -1445,19 +1439,19 @@ MED_50 <- function(Drug_ID,Opioid_Table){
 #' @rawNamespace import(dplyr, except = rename)
 #' @examples
 #'
-#' US_Opioid_Table <- load_Opioid_Table(no_download = TRUE, country="US")
-#' Canada_Opioid_Table <- load_Opioid_Table(no_download = TRUE, country="Canada")
-#' MED_90(786535, Canada_Opioid_Table)
-#' MED_90("0093-0058", US_Opioid_Table)
+#' FDA_Opioid_Table <- load_Opioid_Table(no_download = TRUE, country="US")
+#' HealthCanada_Opioid_Table <- load_Opioid_Table(no_download = TRUE, country="Canada")
+#' MED_90(786535, HealthCanada_Opioid_Table)
+#' MED_90("0093-0058", FDA_Opioid_Table)
 
 
 #' @export
 MED_90 <- function(Drug_ID,Opioid_Table){
   if (Drug_ID %in% Opioid_Table$Drug_ID){
     a <- Opioid_Table[which(Opioid_Table$Drug_ID == Drug_ID),]
-    out_MED90_per_dispensing_unit <- suppressWarnings(as.numeric(a$`No_tabs/ml.assuming.90.MED.limit.per.day`))
+    out_MED90_per_dispensing_unit <- suppressWarnings(as.numeric(a$`No_tabs/ml assuming 90 MED limit per day`))
     if (is.na(out_MED90_per_dispensing_unit[1])){
-      out_MED90_per_dispensing_unit <- a$`No_tabs/ml.assuming.90.MED.limit.per.day`
+      out_MED90_per_dispensing_unit <- a$`No_tabs/ml assuming 90 MED limit per day`
     }
     return(out_MED90_per_dispensing_unit)
   } else return("The Drug_ID could not be found in the Opioid_Table.")

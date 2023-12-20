@@ -20,8 +20,8 @@ Opioid content
 }
 \examples{
 
-US_Opioid_Table <- load_opioid_data("US")
-Canada_Opioid_Table <- load_opioid_data("Canada")
-Opioid(786535, Canada_Opioid_Table)
-Opioid("0093-0058", US_Opioid_Table)
+FDA_Opioid_Table <- load_Opioid_Table(no_download = TRUE, country="US")
+HealthCanada_Opioid_Table <- load_Opioid_Table(no_download = TRUE, country="Canada")
+Opioid(786535, HealthCanada_Opioid_Table)
+Opioid("0093-0058", FDA_Opioid_Table)
 }
