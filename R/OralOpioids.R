@@ -1,4 +1,3 @@
-
 #' OralOpioids: Obtain the latest information on Morphine equivalent doses provided by HealthCanada and the FDA
 #'
 #' This package provides details on Oral Opioids approved for sale by Health Canada and the FDA.
@@ -12,36 +11,44 @@
 
 ## Version 2.0.0
 
-#'Obtain the latest Opioid data from Health Canada
+#'Obtain the latest Opioid data from Health Canada/FDA
 #'
-#'\code{load_HealthCanada_Opioid_Table} compares the date of the local HealthCanada_Opioid_Table and compares
-#'it with the latest date of data provided Health Canada. In case the local file is outdated,
+#'\code{load_opioid_data} compares the date of the local Opioid_Table and compares
+#'it with the latest date of data provided Health Canada or FDA. In case the local file is outdated,
 #'an updated file will be generated.
 #'
 #' @param filelocation String. The directory on your system where you want the dataset to be downloaded.
 #' If "", filelocation will be set to the download path within the OralOpioids
 #' package installation directory.
-#@param country String. Either "canada" (Canada), or "usa" (USA). Default: \code{"ca"}.
+#' @param country String. Either "canada" (Canada), or "us" (US). Default: \code{"us"}.
 #' @param no_download Logical. If set to TRUE, no downloads will be executed and no user input is required. Default: \code{FALSE}.
 #' @param verbose Logical. Indicates whether messages will be printed in the console. Default: \code{TRUE}.
-#'
-#'
-#'@return The function returns the HealthCanada_Opioid_Table as a data.frame. Comments on the data.frame
-#'include a status message (msg), the HealthCanada_Opioid_Table save path (path),
+#' @return The function returns the Opioid_Table as a data.frame. Comments on the data.frame
+#'include a status message (msg), the Opioid_Table save path (path),
 #'a disclaimer, and the source for the retrieved data (source_url_data and source_url_dosing).
 #'
 
 
-#' @import tidyr readr reshape2 stringr openxlsx utils
+#' @import ggplot2 tidyr readr forcats readxl reshape2 stringr openxlsx utils jsonlite dplyr magrittr
 #' @rawNamespace import(dplyr, except = rename)
+#' @importFrom openxlsx read.xlsx write.xlsx
+#' @importFrom dplyr
+#' @importFrom magrittr %>%
+#' @importFrom dplyr %>%
+#' @importFrom utils globalVariables tail menu
+#' @importFrom stringr str_split str_sub word
+#' @importFrom reshape2 dcast
+#' @importFrom tidyr unnest
+#' @importFrom jsonlite fromJSON
+#' @importFrom readr parse_number
 #' @importFrom  plyr rename
 #' @importFrom  rvest html_table
 #' @importFrom rlang .data
 #' @rawNamespace import (xml2, except= as_list)
-#' @rawNamespace import (purrr,except= c(invoke,flatten_raw))
+#' @rawNamespace import (purrr,except= c(invoke,flatten_raw,flatten))
 #' @examples
-#'   HealthCanada_Opioid_Table <- load_HealthCanada_Opioid_Table(no_download = TRUE)
-#'   head(HealthCanada_Opioid_Table)
+#'   Opioid_Table <- load_opioid_data(country= "US")
+#'   head(Opioid_Table)
 
 
 #' @export
@@ -50,9 +57,10 @@ load_HealthCanada_Opioid_Table <- function(filelocation = "", no_download = FALS
   if (filelocation == ""){
     filelocation <- paste0(system.file(package = "OralOpioids"),"/download")
   }
-
+  usethis::use_package ("dplyr")
   ## 1) Get HealthCanada data date and compare with HealthCanada_Opioid_Table date
   ## Get HealthCanada data date ------------------------
+
 
   content <- xml2::read_html("https://www.canada.ca/en/health-canada/services/drugs-health-products/drug-products/drug-product-database/what-data-extract-drug-product-database.html")
   tables <- content %>%
@@ -392,7 +400,9 @@ load_HealthCanada_Opioid_Table <- function(filelocation = "", no_download = FALS
         dplyr::mutate(ranks=order(ID))
 
 
+
       status <- status[,-3]
+
 
 
       status <- reshape2::dcast (status,ID~ ranks, value.var= "Status")
@@ -821,6 +831,7 @@ load_HealthCanada_Opioid_Table <- function(filelocation = "", no_download = FALS
   return(out)
 }
 
+
 #'Obtain the latest Opioid data from the FDA
 #'
 #'\code{load_FDA_Opioid_Table} compares the date of the local FDA_Opioid_Table and compares
@@ -857,12 +868,12 @@ load_HealthCanada_Opioid_Table <- function(filelocation = "", no_download = FALS
 #'   head(FDA_Opioid_Table)
 
 
-#' @export
-load_FDA_Opioid_Table <- function(filelocation = "", no_download = FALSE, verbose = TRUE){
+load_FDAOpioid_Table <- function(filelocation = "", no_download = FALSE, verbose = TRUE){
 
   if (filelocation == ""){
     filelocation <- paste0(system.file(package = "OralOpioids"),"/download")
   }
+
 
 
   ## 1) Get FDA data date and compare with FDAOpioid_Table date
@@ -870,7 +881,7 @@ load_FDA_Opioid_Table <- function(filelocation = "", no_download = FALSE, verbos
 
   second_table_date <- as.character(Sys.Date())
 
-  ## Get FDA_Opioid_Table date ---------------------
+  ## Get FDAOpioid_Table date ---------------------
   FDA_Opioid_Table_is_old <- TRUE
   FDA_Opioid_Table_files_exist <- FALSE
   ## List all files in filelocation
@@ -986,6 +997,13 @@ load_FDA_Opioid_Table <- function(filelocation = "", no_download = FALSE, verbos
       }
 
       ## 1) Get FDA data
+
+
+      tmp <- tempfile()
+      download.file("https://download.open.fda.gov/drug/ndc/drug-ndc-0001-of-0001.json.zip",destfile =tmp,quiet = FALSE, mode = "wb",flatten=T,simplifyVector = TRUE)
+      tmp1 <- unzip(tmp)
+      result <- jsonlite::fromJSON(tmp1)
+
       temp <- tempfile()
       download.file("https://download.open.fda.gov/drug/ndc/drug-ndc-0001-of-0001.json.zip",temp,quiet = FALSE, mode = "wb",flatten=T,simplifyVector = TRUE)
       tmp1 <- unzip(temp)
@@ -995,6 +1013,7 @@ load_FDA_Opioid_Table <- function(filelocation = "", no_download = FALSE, verbos
       g1 <- drug[,c("product_ndc","pharm_class")]
 
       colnames(g1) <- c("colA","colB")
+      usethis::use_package("tidyr")
       h1 <- tidyr::unnest(g1, colB)
 
       h1 <- unique(h1)
@@ -1014,6 +1033,7 @@ load_FDA_Opioid_Table <- function(filelocation = "", no_download = FALSE, verbos
       b1 <- merge(b1,Opioid_ndc,by="product_ndc")
 
       colnames(b1) <- c("colA","colB","brand_name")
+      usethis::use_package("dplyr")
       c <- tidyr::unnest(b1, c(colB, brand_name))
 
       c <- unique(c)
@@ -1029,6 +1049,7 @@ load_FDA_Opioid_Table <- function(filelocation = "", no_download = FALSE, verbos
 
       c <- cbind(c,x1)
 
+      usethis::use_package("readr")
 
       c$Base1 <- readr::parse_number(c$Base1)
       c$Base2 <- suppressWarnings(readr::parse_number(c$Base2))
@@ -1205,10 +1226,13 @@ load_FDA_Opioid_Table <- function(filelocation = "", no_download = FALSE, verbos
       colnames(drug2)[colnames(drug2) == "Threshold_14days"] <- "Maximum No_tabs/ml assuming 50 MED limit for 14 days"
       colnames(drug2)[colnames(drug2) == "Threshold_30days"] <- "Maximum No_tabs/ml assuming 50 MED limit for 30 days"
 
-      drug2$last_updated <- second_table_date
+      drug2$last_updated <- pmax(file_date, second_table_date)
+
 
 
       FDA_Opioid_Table <- drug2
+
+
 
       out_msg <- paste0("The FDA_Opioid_Table was successfully updated to ",
                         second_table_date,".")
@@ -1247,11 +1271,28 @@ load_FDA_Opioid_Table <- function(filelocation = "", no_download = FALSE, verbos
                        paste0("Source url of the data: ",source_url_data),
                        paste0("Source url used for dosing: ",source_url_dosing), sep="\n")
 
-
     }
   }
   return(out)
 }
+
+
+# Define the main function to load opioid data based on country and Drug ID
+load_opioid_data <- function(country,filelocation = "") {
+  if (tolower(country) == "us") {
+    return(load_FDAOpioid_Table())
+  } else if (tolower(country) == "canada") {
+    return(load_HealthCanada_Opioid_Table())
+  } else {
+    stop("Invalid country. Please specify either 'US' or 'Canada'.")
+  }
+}
+
+load_opioid_data("Canada")
+load_opioid_data("US")
+
+#load_FDAOpioid_Table()
+
 
 #'Obtain the latest Opioid data
 #'
@@ -1299,23 +1340,24 @@ load_Opioid_Table <- function(filelocation = "", no_download = FALSE, verbose = 
 return(out)
 }
 
+
 #'Get the Morphine Equivalent Dose (MED) by using the DIN or NDC
 #'
 #'\code{MED} retrieves the Morphine Equivalent Dose from the Opioid_Table.
 #'
 #'@param Drug_ID A numeric value for the DIN or NDC. Exclude all zeros in front.
 #'@param Opioid_Table Opioid dataset which can be loaded by using
-#'the \code{load_HealthCanada_Opioid_Table()} or \code{load_FDA_Opioid_Table()} function. The name you use to call the function should be input here.
+
+#'the \code{load_HealthCanada_Opioid_Table()} or \code{load_FDAOpioid_Table()} function. The name you use to call the function should be input here.
 #'
 #' @return MED: Morphine Equivalent Dose
 #' @rawNamespace import(dplyr, except = rename)
 #' @examples
 #'
-#' HealthCanada_Opioid_Table <- load_HealthCanada_Opioid_Table(no_download = TRUE)
-#' MED(786535, HealthCanada_Opioid_Table)
-#'
-#' FDA_Opioid_Table <- load_FDA_Opioid_Table(no_download = TRUE)
-#' MED("0093-0058", FDA_Opioid_Table)
+#' US_Opioid_Table <- load_opioid_data("US")
+#' Canada_Opioid_Table <- load_opioid_data("Canada")
+#' MED(786535, Canada_Opioid_Table)
+#' MED("0093-0058", US_Opioid_Table)
 
 
 #' @export
@@ -1345,11 +1387,11 @@ MED <- function(Drug_ID,Opioid_Table){
 #' @rawNamespace import(dplyr, except = rename)
 #' @examples
 #'
-#' HealthCanada_Opioid_Table <- load_HealthCanada_Opioid_Table(no_download = TRUE)
-#' Opioid(786535, HealthCanada_Opioid_Table)
-#'
-#' FDA_Opioid_Table <- load_FDA_Opioid_Table(no_download = TRUE)
-#' Opioid("0093-0058", FDA_Opioid_Table)
+#' US_Opioid_Table <- load_opioid_data("US")
+#' Canada_Opioid_Table <- load_opioid_data("Canada")
+#' Opioid(786535, Canada_Opioid_Table)
+#' Opioid("0093-0058", US_Opioid_Table)
+
 
 #' @export
 Opioid <- function(Drug_ID,Opioid_Table){
@@ -1371,11 +1413,12 @@ Opioid <- function(Drug_ID,Opioid_Table){
 #' @rawNamespace import(dplyr, except = rename)
 #' @examples
 #'
-#' HealthCanada_Opioid_Table <- load_HealthCanada_Opioid_Table(no_download = TRUE)
-#' Brand(786535, HealthCanada_Opioid_Table)
-#'
-#' FDA_Opioid_Table <- load_FDA_Opioid_Table(no_download = TRUE)
-#' Brand("0093-0058", FDA_Opioid_Table)
+#' US_Opioid_Table <- load_opioid_data("US")
+#' Canada_Opioid_Table <- load_opioid_data("Canada")
+#' Brand(786535, Canada_Opioid_Table)
+#' Brand("0093-0058", US_Opioid_Table)
+
+
 
 #' @export
 Brand <- function(Drug_ID,Opioid_Table){
@@ -1384,8 +1427,6 @@ Brand <- function(Drug_ID,Opioid_Table){
   return(a$Brand)}
   else return("The Drug_ID could not be found in the Opioid_Table.")
 }
-
-
 
 #'Maximum number of units/millilitres of oral opioids allowed per day assuming a daily limit of 50 MED/day for a DIN or NDC from the Opioid Table by using the DIN or NDC
 #'
@@ -1399,11 +1440,12 @@ Brand <- function(Drug_ID,Opioid_Table){
 #' @rawNamespace import(dplyr, except = rename)
 #' @examples
 #'
-#' HealthCanada_Opioid_Table <- load_HealthCanada_Opioid_Table(no_download = TRUE)
-#' MED_50(786535, HealthCanada_Opioid_Table)
-#'
-#' FDA_Opioid_Table <- load_FDA_Opioid_Table(no_download = TRUE)
-#' MED_50("0093-0058", FDA_Opioid_Table)
+#' US_Opioid_Table <- load_opioid_data("US")
+#' Canada_Opioid_Table <- load_opioid_data("Canada")
+#' MED_50(786535, Canada_Opioid_Table)
+#' MED_50("0093-0058", US_Opioid_Table)
+
+
 #'
 #' @export
 MED_50 <- function(Drug_ID,Opioid_Table){
@@ -1429,12 +1471,12 @@ MED_50 <- function(Drug_ID,Opioid_Table){
 #' @rawNamespace import(dplyr, except = rename)
 #' @examples
 #'
-#' HealthCanada_Opioid_Table <- load_HealthCanada_Opioid_Table(no_download = TRUE)
-#' MED_90(786535, HealthCanada_Opioid_Table)
-#'
-#' FDA_Opioid_Table <- load_FDA_Opioid_Table(no_download = TRUE)
-#' MED_90("0093-0058", FDA_Opioid_Table)
-#'
+#' US_Opioid_Table <- load_opioid_data("US")
+#' Canada_Opioid_Table <- load_opioid_data("Canada")
+#' MED_90(786535, Canada_Opioid_Table)
+#' MED_90("0093-0058", US_Opioid_Table)
+
+
 #' @export
 MED_90 <- function(Drug_ID,Opioid_Table){
   if (Drug_ID %in% Opioid_Table$Drug_ID){
